@@ -9,10 +9,8 @@ namespace base {
 class Timestamp : public boost::less_than_comparable<Timestamp> {
 public:
   Timestamp() : microSeconds_(0) {
-
   }
   explicit Timestamp(int64_t microSeconds) : microSeconds_(microSeconds) {
-
   }
 
   string toString() const;
