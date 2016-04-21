@@ -3,7 +3,7 @@
 
 namespace base {
 
-namespace CurrenThread {
+namespace CurrentThread {
 
   extern __thread int t_cacheTid;
   extern __thread char t_tidString[32];
@@ -30,7 +30,6 @@ namespace CurrenThread {
   }
 
   bool isMainThread();
-
 }
 
 }

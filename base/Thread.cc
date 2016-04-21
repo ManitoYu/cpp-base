@@ -8,7 +8,7 @@
 
 namespace base {
 
-namespace CurrenThread {
+namespace CurrentThread {
   __thread int t_cacheTid = 0;
   __thread char t_tidString[32];
   __thread int t_tidStringLength = 6;
@@ -29,14 +29,14 @@ namespace detail {
 
 using namespace base;
 
-void CurrenThread::cacheTid() {
+void CurrentThread::cacheTid() {
   if (t_cacheTid == 0) {
     t_cacheTid = detail::gettid();
     t_tidStringLength = snprintf(t_tidString, sizeof t_tidString, "%5d ", t_cacheTid);
   }
 }
 
-bool CurrenThread::isMainThread() {
+bool CurrentThread::isMainThread() {
   return tid() == ::getpid();
 }
 
