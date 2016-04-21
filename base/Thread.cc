@@ -1,9 +1,43 @@
 #include <base/Thread.h>
+#include <base/CurrentThread.h>
+
+#include <stdio.h>
+#include <unistd.h>
+#include <sys/syscall.h>
+#include <sys/types.h>
 
 namespace base {
 
+namespace CurrenThread {
+  __thread int t_cacheTid = 0;
+  __thread char t_tidString[32];
+  __thread int t_tidStringLength = 6;
+  __thread const char* t_threadName = "unknown";
+}
+
 void* threadFunc(void* obj) {
   static_cast<Thread*>(obj)->runInThread();
+}
+
+namespace detail {
+  pid_t gettid() {
+    return static_cast<pid_t>(::syscall(SYS_gettid));
+  }
+}
+
+}
+
+using namespace base;
+
+void CurrenThread::cacheTid() {
+  if (t_cacheTid == 0) {
+    t_cacheTid = detail::gettid();
+    t_tidStringLength = snprintf(t_tidString, sizeof t_tidString, "%5d ", t_cacheTid);
+  }
+}
+
+bool CurrenThread::isMainThread() {
+  return tid() == ::getpid();
 }
 
 Thread::Thread(const ThreadFunc& func)
@@ -36,6 +70,4 @@ int Thread::join() {
 
 void Thread::runInThread() {
   func_();
-}
-
 }

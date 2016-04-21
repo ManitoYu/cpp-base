@@ -1,15 +1,6 @@
-cmake_minimum_required(VERSION 2.8)
+project(wheel C CXX)
 
-set(
-  base
-  Timestamp.cc
-  Thread.cc
-)
+include_directories(${PROJECT_SOURCE_DIR})
 
-add_library(base ${base})
-install(TARGETS base DESTINATION lib)
-
-file(GLOB HEADERS "*.h")
-install(FILES ${HEADERS} DESTINATION include/base)
-
-add_subdirectory(tests)
+add_subdirectory(base)
+add_subdirectory(net)
