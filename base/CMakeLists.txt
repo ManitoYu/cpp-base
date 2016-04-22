@@ -4,6 +4,8 @@ set(
   base
   Timestamp.cc
   Thread.cc
+  Condition.cc
+  CountDownLatch.cc
 )
 
 add_library(base ${base})

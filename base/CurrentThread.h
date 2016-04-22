@@ -1,6 +1,8 @@
 #ifndef BASE_CURRENTTHREAD_H
 #define BASE_CURRENTTHREAD_H
 
+#include <stdint.h>
+
 namespace base {
 
 namespace CurrentThread {
