@@ -11,3 +11,6 @@ set_target_properties(Mutex_test PROPERTIES COMPILE_FLAGS "-std=c++0x")
 
 add_executable(Exception_test Exception_test.cc)
 target_link_libraries(Exception_test base)
+
+add_executable(Singleton_test Singleton_test.cc)
+target_link_libraries(Singleton_test base pthread)
