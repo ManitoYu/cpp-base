@@ -7,6 +7,7 @@ set(
   Condition.cc
   CountDownLatch.cc
   Exception.cc
+  ThreadPool.cc
 )
 
 add_library(base ${base})

@@ -1,7 +1,6 @@
 #ifndef BASE_MUTEX_H
 #define BASE_MUTEX_H
 
-#include <base/Mutex.h>
 #include <base/CurrentThread.h>
 #include <boost/noncopyable.hpp>
 #include <pthread.h>
@@ -22,6 +21,10 @@ class MutexLock : boost::noncopyable {
 
     bool isLockedByThisThread() const {
       return holder_ == CurrentThread::tid();
+    }
+
+    void assertLocked() const {
+      assert(isLockedByThisThread());
     }
 
     void lock() {
@@ -48,7 +51,7 @@ class MutexLock : boost::noncopyable {
 
   private:
     friend class Condition;
-    
+
     class UnassignGuard : boost::noncopyable {
       public:
         UnassignGuard(MutexLock& owner) : owner_(owner) {
