@@ -21,3 +21,6 @@ set_target_properties(ThreadPool_test PROPERTIES COMPILE_FLAGS "-std=c++0x")
 
 add_executable(ThreadLocal_test ThreadLocal_test.cc)
 target_link_libraries(ThreadLocal_test base pthread)
+
+add_executable(ThreadLocalSingleton_test ThreadLocalSingleton_test.cc)
+target_link_libraries(ThreadLocalSingleton_test base pthread)
