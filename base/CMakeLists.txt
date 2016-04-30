@@ -8,6 +8,9 @@ set(
   CountDownLatch.cc
   Exception.cc
   ThreadPool.cc
+  LogStream.cc
+  LogFile.cc
+  FileUtil.cc
 )
 
 add_library(base ${base})
