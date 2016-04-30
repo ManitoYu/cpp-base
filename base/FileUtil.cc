@@ -1,12 +1,13 @@
 #include <base/FileUtil.h>
 #include <assert.h>
 #include <stdio.h>
+#include <string.h>
 
 using namespace base;
 
 FileUtil::AppendFile::AppendFile(const string& filename)
-  : fp_(::open(filename.c_str(), "ae")),
-    writtemBytes_(0)
+  : fp_(::fopen(filename.c_str(), "ae")),
+    writtenBytes_(0)
 {
   assert(fp_);
   ::setbuffer(fp_, buffer_, sizeof buffer_); // 设置文件缓冲区
@@ -18,12 +19,12 @@ FileUtil::AppendFile::~AppendFile() {
 
 void FileUtil::AppendFile::append(const char* logline, const size_t len) {
   size_t n = write(logline, len);
-  szie_t remain = len - n;
+  size_t remain = len - n;
   while (remain > 0) {
     size_t x = write(logline + n, remain);
     if (x == 0) {
       int err = ferror(fp_);
-      if (err) fprintf(stderr, "AppendFile::append() failed %s\n", strerror_tl(err));
+      if (err) fprintf(stderr, "AppendFile::append() failed %s\n", strerror(err));
       break;
     }
     n += x;

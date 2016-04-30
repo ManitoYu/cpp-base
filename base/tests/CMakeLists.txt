@@ -30,3 +30,6 @@ target_link_libraries(Logging_test base)
 
 add_executable(LogStream_test LogStream_test.cc)
 target_link_libraries(LogStream_test base boost_unit_test_framework)
+
+add_executable(LogFile_test LogFile_test.cc)
+target_link_libraries(LogFile_test base pthread)
