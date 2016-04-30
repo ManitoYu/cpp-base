@@ -24,3 +24,9 @@ target_link_libraries(ThreadLocal_test base pthread)
 
 add_executable(ThreadLocalSingleton_test ThreadLocalSingleton_test.cc)
 target_link_libraries(ThreadLocalSingleton_test base pthread)
+
+add_executable(Logging_test Logging_test.cc)
+target_link_libraries(Logging_test base)
+
+add_executable(LogStream_test LogStream_test.cc)
+target_link_libraries(LogStream_test base boost_unit_test_framework)
