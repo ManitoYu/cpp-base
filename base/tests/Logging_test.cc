@@ -1,12 +1,15 @@
-#include <iostream>
-#include <string.h>
+#include <base/Logging.h>
 
-using namespace std;
+using namespace base;
 
 int main() {
+  Logger::setLogLevel(Logger::DEBUG);
 
-  cout << strrchr("/tmp/file.log", '/') << endl;
-  cout << strlen("yucong") << endl;
+  LOG_DEBUG << "yucong";
+  LOG_ERROR << "yucong";
+  LOG_WARN << "yucong";
+  LOG_INFO << "yucong";
+  LOG_FATAL << "yucong";
 
   return 0;
 }

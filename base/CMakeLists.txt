@@ -11,6 +11,7 @@ set(
   LogStream.cc
   LogFile.cc
   FileUtil.cc
+  Logging.cc
 )
 
 add_library(base ${base})
