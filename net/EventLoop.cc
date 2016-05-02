@@ -1,6 +1,9 @@
 #include <net/EventLoop.h>
 #include <base/Logging.h>
 #include <poll.h>
+#include <net/Poller.h>
+#include <net/Channel.h>
+#include <net/poller/PollPoller.h>
 
 using namespace base;
 using namespace base::net;
@@ -11,7 +14,8 @@ namespace {
 
 EventLoop::EventLoop()
   : looping_(false),
-    threadId_(CurrentThread::tid())
+    threadId_(CurrentThread::tid()),
+    poller_(new PollPoller(this))
 {
   if (t_loopInThisThread) {
     // 如果当前线程已经创建了EventLoop对象，则终止进程
@@ -31,9 +35,23 @@ void EventLoop::loop() {
   assertInLoopThread();
 
   looping_ = true;
+  quit_ = false;
   LOG_INFO << "EventLoop " << this << " start looping";
 
-  ::poll(NULL, 0, 5 * 1000);
+  while (! quit_) {
+    activeChannels_.clear();
+    pollReturnTime_ = poller_->poll(5000, &activeChannels_);
+    // 事件处理
+    eventHandling_ = true;
+    for (ChannelList::iterator it = activeChannels_.begin();
+      it != activeChannels_.end(); it ++)
+    {
+      currentActiveChannel_ = *it;
+      currentActiveChannel_->handleEvent(pollReturnTime_);
+    }
+    currentActiveChannel_ = NULL;
+    eventHandling_ = false;
+  }
 
   LOG_INFO << "EventLoop " << this << " stop looping";
   looping_ = false;
@@ -44,4 +62,16 @@ void EventLoop::abortNotInLoopThread() {
     << "EventLoop::abortNotInLoopThread - EventLoop " << this
     << " was created in threadId_ = " << threadId_
     << ", current thread id = " << CurrentThread::tid();
+}
+
+void EventLoop::updateChannel(Channel* channel) {
+  assert(channel->ownerLoop() == this);
+  assertInLoopThread();
+  poller_->updateChannel(channel);
+}
+
+void EventLoop::removeChannel(Channel* channel) {
+  assert(channel->ownerLoop() == this);
+  assertInLoopThread();
+  poller_->removeChannel(channel);
 }
