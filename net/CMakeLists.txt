@@ -3,6 +3,9 @@ cmake_minimum_required(VERSION 2.8)
 set(
   net
   EventLoop.cc
+  Channel.cc
+  Poller.cc
+  poller/PollPoller.cc
 )
 
 add_library(net ${net})

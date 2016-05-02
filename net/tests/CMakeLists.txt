@@ -1,2 +1,5 @@
 add_executable(EventLoop_test EventLoop_test.cc)
 target_link_libraries(EventLoop_test net pthread)
+
+add_executable(Channel_test Channel_test.cc)
+target_link_libraries(Channel_test net pthread)
