@@ -6,6 +6,7 @@ set(
   Channel.cc
   Poller.cc
   poller/PollPoller.cc
+  poller/EPollPoller.cc
 )
 
 add_library(net ${net})

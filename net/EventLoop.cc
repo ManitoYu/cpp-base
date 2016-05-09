@@ -4,6 +4,7 @@
 #include <net/Poller.h>
 #include <net/Channel.h>
 #include <net/poller/PollPoller.h>
+#include <net/poller/EPollPoller.h>
 
 using namespace base;
 using namespace base::net;
@@ -15,7 +16,7 @@ namespace {
 EventLoop::EventLoop()
   : looping_(false),
     threadId_(CurrentThread::tid()),
-    poller_(new PollPoller(this))
+    poller_(new EPollPoller(this))
 {
   if (t_loopInThisThread) {
     // 如果当前线程已经创建了EventLoop对象，则终止进程
