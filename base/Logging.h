@@ -86,7 +86,7 @@ inline Logger::LogLevel Logger::logLevel() {
   return g_logLevel;
 }
 
-#define LOG_TRACE if (Logger::logLever() <= Logger::TRACE) \
+#define LOG_TRACE if (Logger::logLevel() <= Logger::TRACE) \
   Logger(__FILE__, __LINE__, Logger::TRACE, __func__).stream()
 #define LOG_DEBUG if (Logger::logLevel() <= Logger::DEBUG) \
   Logger(__FILE__, __LINE__, Logger::DEBUG, __func__).stream()
