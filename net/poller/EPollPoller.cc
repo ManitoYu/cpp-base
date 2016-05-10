@@ -3,6 +3,7 @@
 #include <base/Logging.h>
 #include <net/Channel.h>
 #include <poll.h>
+#include <errno.h>
 
 using namespace base;
 using namespace base::net;
@@ -40,6 +41,7 @@ Timestamp EPollPoller::poll(int timeoutMs, ChannelList* activeChannels) {
     &*events_.begin(),
     static_cast<int>(events_.size()),
     timeoutMs);
+  int savedErrno = errno;
 
   Timestamp now(Timestamp::now());
 
@@ -47,10 +49,12 @@ Timestamp EPollPoller::poll(int timeoutMs, ChannelList* activeChannels) {
     fillActiveChannels(numEvents, activeChannels);
     if (static_cast<size_t>(numEvents) == events_.size()) {
       events_.resize(events_.size() * 2);
-    } else if (numEvents == 0) {
-      LOG_TRACE << "nothing happended";
-    } else {
-      LOG_ERROR << "EPollPoller::poll()";
+    }
+  } else if (numEvents == 0) {
+    LOG_TRACE << "nothing happended";
+  } else {
+    if (savedErrno != EINTR) {
+      LOG_ERROR << "EPollPoller::poll() " << savedErrno;
     }
   }
 
