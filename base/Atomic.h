@@ -1,6 +1,9 @@
 #ifndef BASE_ATOMIC_H
 #define BASE_ATOMIC_H
 
+#include <boost/noncopyable.hpp>
+#include <stdint.h>
+
 namespace base {
 
 template<typename T>
@@ -49,8 +52,8 @@ private:
   volatile T value_;
 };
 
-typedef base::AtomicIntegerT<int32_t> AtomicInt32;
-typedef base::AtomicIntegerT<int64_t> AtomicInt64;
+typedef AtomicIntegerT<int32_t> AtomicInt32;
+typedef AtomicIntegerT<int64_t> AtomicInt64;
 
 }
 
