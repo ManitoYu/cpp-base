@@ -7,6 +7,8 @@ set(
   Poller.cc
   poller/PollPoller.cc
   poller/EPollPoller.cc
+  Timer.cc
+  TimerQueue.cc
 )
 
 add_library(net ${net})
