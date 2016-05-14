@@ -7,12 +7,15 @@
 #include <boost/scoped_ptr.hpp>
 #include <base/Timestamp.h>
 #include <vector>
+#include <net/Callbacks.h>
+#include <net/TimerId.h>
 
 namespace base {
 namespace net {
 
 class Channel;
 class Poller;
+class TimerQueue;
 
 class EventLoop : boost::noncopyable {
   public:
@@ -20,6 +23,14 @@ class EventLoop : boost::noncopyable {
     ~EventLoop();
 
     void loop();
+
+    void quit();
+
+    TimerId runAt(const Timestamp& time, const TimerCallback& cb);
+    TimerId runAfter(double delay, const TimerCallback& cb);
+    TimerId runEvery(double interval, const TimerCallback& cb);
+
+    void cancel(TimerId timerId);
 
     void assertInLoopThread() {
       if (! isInLoopThread()) abortNotInLoopThread();
@@ -40,6 +51,7 @@ class EventLoop : boost::noncopyable {
     const pid_t threadId_;
     Timestamp pollReturnTime_;
     boost::scoped_ptr<Poller> poller_;
+    boost::scoped_ptr<TimerQueue> timerQueue_;
 
     ChannelList activeChannels_; // poller返回的活动通道
     Channel* currentActiveChannel_; // 当前正在处理的活动通道

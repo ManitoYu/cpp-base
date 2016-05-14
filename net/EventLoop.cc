@@ -5,6 +5,7 @@
 #include <net/Channel.h>
 #include <net/poller/PollPoller.h>
 #include <net/poller/EPollPoller.h>
+#include <net/TimerQueue.h>
 
 using namespace base;
 using namespace base::net;
@@ -15,8 +16,12 @@ namespace {
 
 EventLoop::EventLoop()
   : looping_(false),
+    quit_(false),
+    eventHandling_(false),
     threadId_(CurrentThread::tid()),
-    poller_(new EPollPoller(this))
+    poller_(new EPollPoller(this)),
+    timerQueue_(new TimerQueue(this)),
+    currentActiveChannel_(NULL)
 {
   if (t_loopInThisThread) {
     // 如果当前线程已经创建了EventLoop对象，则终止进程
@@ -56,6 +61,28 @@ void EventLoop::loop() {
 
   LOG_INFO << "EventLoop " << this << " stop looping";
   looping_ = false;
+}
+
+void EventLoop::quit() {
+  quit_ = true;
+}
+
+TimerId EventLoop::runAt(const Timestamp& time, const TimerCallback& cb) {
+  return timerQueue_->addTimer(cb, time, 0.0);
+}
+
+TimerId EventLoop::runAfter(double delay, const TimerCallback& cb) {
+  Timestamp time(addTime(Timestamp::now(), delay));
+  return runAt(time, cb);
+}
+
+TimerId EventLoop::runEvery(double interval, const TimerCallback& cb) {
+  Timestamp time(addTime(Timestamp::now(), interval));
+  return timerQueue_->addTimer(cb, time, interval);
+}
+
+void EventLoop::cancel(TimerId timerId) {
+  return timerQueue_->cancel(timerId);
 }
 
 void EventLoop::abortNotInLoopThread() {
