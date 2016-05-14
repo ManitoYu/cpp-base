@@ -20,6 +20,8 @@ public:
   static Timestamp now();
   static Timestamp invalid() { return Timestamp(); }
 
+  bool valid() const { return microSeconds_ > 0; }
+
   static const int kMicroSecondsPerSecond = 1000 * 1000;
 
 private:
