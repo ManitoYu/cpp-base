@@ -9,13 +9,14 @@ set(
   poller/EPollPoller.cc
   Timer.cc
   TimerQueue.cc
+  EventLoopThread.cc
 )
 
 add_library(net ${net})
 target_link_libraries(net base) # net依赖于base
-install(TARGETS net DESTINATION lib)
 
 file(GLOB HEADERS "*.h")
 install(FILES ${HEADERS} DESTINATION include/net)
+install(TARGETS net DESTINATION lib)
 
 add_subdirectory(tests)
