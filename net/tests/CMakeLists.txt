@@ -6,3 +6,7 @@ target_link_libraries(Channel_test net pthread)
 
 add_executable(TimerQueue_test TimerQueue_test.cc)
 target_link_libraries(TimerQueue_test net pthread)
+
+add_executable(EventLoopThread_test EventLoopThread_test.cc)
+target_link_libraries(EventLoopThread_test net pthread)
+set_target_properties(EventLoopThread_test PROPERTIES COMPILE_FLAGS "-std=c++11")

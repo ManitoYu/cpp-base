@@ -16,6 +16,9 @@ class Thread : boost::noncopyable {
 
     void start();
     int join();
+
+    bool started() const { return started_; };
+
     void runInThread();
 
   private:
