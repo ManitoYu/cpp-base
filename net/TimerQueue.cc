@@ -73,7 +73,7 @@ TimerQueue::~TimerQueue() {
 
 TimerId TimerQueue::addTimer(const TimerCallback& cb, Timestamp when, double interval) {
   Timer* timer = new Timer(cb, when, interval);
-  addTimerInLoop(timer);
+  loop_->runInLoop(boost::bind(&TimerQueue::addTimerInLoop, this, timer));
   return TimerId(timer, timer->sequence());
 }
 

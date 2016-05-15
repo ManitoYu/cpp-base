@@ -6,21 +6,36 @@
 #include <net/poller/PollPoller.h>
 #include <net/poller/EPollPoller.h>
 #include <net/TimerQueue.h>
+#include <sys/eventfd.h>
+#include <boost/bind.hpp>
 
 using namespace base;
 using namespace base::net;
 
 namespace {
   __thread EventLoop* t_loopInThisThread = NULL; // 线程局部存储
+
+  int createEventFd() {
+    int evtfd = ::eventfd(0, EFD_NONBLOCK | EFD_CLOEXEC);
+    if (evtfd < 0) {
+      LOG_ERROR << "Failed in eventfd";
+      abort();
+    }
+    return evtfd;
+  }
+
 }
 
 EventLoop::EventLoop()
   : looping_(false),
     quit_(false),
     eventHandling_(false),
+    callingPendingFunctors_(false),
     threadId_(CurrentThread::tid()),
     poller_(new EPollPoller(this)),
     timerQueue_(new TimerQueue(this)),
+    wakeupfd_(createEventFd()),
+    wakeupChannel_(new Channel(this, wakeupfd_)),
     currentActiveChannel_(NULL)
 {
   if (t_loopInThisThread) {
@@ -29,6 +44,8 @@ EventLoop::EventLoop()
   } else {
     t_loopInThisThread = this;
   }
+  wakeupChannel_->setReadCallback(boost::bind(&EventLoop::handleRead, this));
+  wakeupChannel_->enableReading();
 }
 
 EventLoop::~EventLoop() {
@@ -57,6 +74,7 @@ void EventLoop::loop() {
     }
     currentActiveChannel_ = NULL;
     eventHandling_ = false;
+    doPendingFunctors();
   }
 
   LOG_INFO << "EventLoop " << this << " stop looping";
@@ -65,6 +83,23 @@ void EventLoop::loop() {
 
 void EventLoop::quit() {
   quit_ = true;
+  wakeup();
+}
+
+void EventLoop::runInLoop(const Functor& cb) {
+  if (isInLoopThread()) {
+    cb();
+  } else {
+    queueInLoop(cb);
+  }
+}
+
+void EventLoop::queueInLoop(const Functor& cb) {
+  {
+    MutexLockGuard lock(mutex_);
+    pendingFunctors_.push_back(cb);
+  }
+  if (! isInLoopThread() || callingPendingFunctors_) wakeup();
 }
 
 TimerId EventLoop::runAt(const Timestamp& time, const TimerCallback& cb) {
@@ -102,4 +137,30 @@ void EventLoop::removeChannel(Channel* channel) {
   assert(channel->ownerLoop() == this);
   assertInLoopThread();
   poller_->removeChannel(channel);
+}
+
+void EventLoop::wakeup() {
+  uint64_t one = 1;
+  ssize_t n = write(wakeupfd_, &one, sizeof one);
+  if (n != sizeof one) LOG_ERROR << "EventLoop::wakeup()";
+}
+
+void EventLoop::handleRead() {
+  uint64_t one = 1;
+  ssize_t n = read(wakeupfd_, &one, sizeof one);
+  if (n != sizeof one) LOG_ERROR << "EventLoop::handleRead()";
+}
+
+void EventLoop::doPendingFunctors() {
+  std::vector<Functor> functors;
+  callingPendingFunctors_ = true;
+
+  {
+    MutexLockGuard lock(mutex_);
+    functors.swap(pendingFunctors_);
+  }
+
+  for (size_t i = 0; i < functors.size(); i ++) functors[i]();
+
+  callingPendingFunctors_ = false;
 }
