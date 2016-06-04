@@ -10,6 +10,8 @@ set(
   Timer.cc
   TimerQueue.cc
   EventLoopThread.cc
+  InetAddress.cc
+  SocketsOps.cc
 )
 
 add_library(net ${net})
