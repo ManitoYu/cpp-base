@@ -12,6 +12,7 @@ set(
   EventLoopThread.cc
   InetAddress.cc
   SocketsOps.cc
+  Socket.cc
 )
 
 add_library(net ${net})
