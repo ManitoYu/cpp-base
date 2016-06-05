@@ -13,6 +13,7 @@ set(
   InetAddress.cc
   SocketsOps.cc
   Socket.cc
+  Acceptor.cc
 )
 
 add_library(net ${net})
