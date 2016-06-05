@@ -23,6 +23,7 @@ class InetAddress {
     uint16_t toPort() const;
 
     const struct sockaddr* getSockAddr() const { return sockets::sockaddr_cast(&addr_); }
+    void setSockAddrInet(const struct sockaddr_in& addr) { addr_ = addr; }
 
     uint32_t ipNetEndian() const;
     uint16_t portNetEndian() const { return addr_.sin_port; }
