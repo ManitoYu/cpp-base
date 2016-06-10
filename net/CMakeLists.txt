@@ -14,6 +14,7 @@ set(
   SocketsOps.cc
   Socket.cc
   Acceptor.cc
+  EventLoopThreadPool.cc
 )
 
 add_library(net ${net})
