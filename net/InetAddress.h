@@ -16,6 +16,7 @@ class InetAddress {
   public:
     explicit InetAddress(uint16_t port = 0, bool loopbackOnly = false);
     InetAddress(string ip, uint16_t port);
+    explicit InetAddress(const struct sockaddr_in& addr) : addr_(addr) {}
 
     sa_family_t family() const { return addr_.sin_family; }
     string toIp() const;
