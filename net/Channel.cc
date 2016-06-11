@@ -15,11 +15,17 @@ Channel::Channel(EventLoop* loop, int fd)
     index_(-1),
     events_(0),
     revents_(0),
+    tied_(false),
     eventHandling_(false)
 {
 }
 
 Channel::~Channel() {
+}
+
+void Channel::tie(const boost::shared_ptr<void>& obj) {
+  tie_ = obj;
+  tied_ = true;
 }
 
 void Channel::update() {
@@ -32,7 +38,8 @@ void Channel::remove() {
 }
 
 void Channel::handleEvent(Timestamp receiveTime) {
-  handleEventWithGuard(receiveTime);
+  if (! tied_) return handleEventWithGuard(receiveTime);
+  if (tie_.lock()) handleEventWithGuard(receiveTime);
 }
 
 void Channel::handleEventWithGuard(Timestamp receiveTime) {

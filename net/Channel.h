@@ -4,6 +4,8 @@
 #include <boost/function.hpp>
 #include <boost/noncopyable.hpp>
 #include <base/Timestamp.h>
+#include <boost/shared_ptr.hpp>
+#include <boost/weak_ptr.hpp>
 
 namespace base {
 namespace net {
@@ -24,6 +26,8 @@ class Channel : boost::noncopyable {
     void setWriteCallback(const EventCallback& cb) { writeCallback_ = cb; }
     void setCloseCallback(const EventCallback& cb) { closeCallback_ = cb; }
     void setErrorCallback(const EventCallback& cb) { errorCallback_ = cb; }
+
+    void tie(const boost::shared_ptr<void>&);
 
     int fd() const { return fd_; }
     int events() const { return events_; }
@@ -59,6 +63,8 @@ class Channel : boost::noncopyable {
     int revents_; // 返回的事件
     int index_;
 
+    boost::weak_ptr<void> tie_;
+    bool tied_;
     bool eventHandling_;
     ReadEventCallback readCallback_;
     EventCallback writeCallback_;
