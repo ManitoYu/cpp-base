@@ -15,6 +15,8 @@ set(
   Socket.cc
   Acceptor.cc
   EventLoopThreadPool.cc
+  TcpConnection.cc
+  TcpServer.cc
 )
 
 add_library(net ${net})
