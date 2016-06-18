@@ -31,7 +31,7 @@ int Socket::accept(InetAddress* peeraddr) {
   return connfd;
 }
 
-void Socket::shundownWrite() {
+void Socket::shutdownWrite() {
   sockets::shutdownWrite(sockfd_);
 }
 

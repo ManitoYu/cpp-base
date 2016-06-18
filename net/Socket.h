@@ -21,7 +21,7 @@ class Socket : boost::noncopyable {
     void listen();
     int accept(InetAddress* peeraddr);
 
-    void shundownWrite();
+    void shutdownWrite();
 
     void setTcpNoDelay(bool on);
     void setReuseAddr(bool on);
