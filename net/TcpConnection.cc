@@ -4,8 +4,11 @@
 #include <net/Channel.h>
 #include <net/EventLoop.h>
 #include <base/Logging.h>
+
 #include <boost/bind.hpp>
+
 #include <assert.h>
+#include <errno.h>
 
 using namespace base;
 using namespace base::net;
@@ -16,10 +19,10 @@ void base::net::defaultConnectionCallback(const TcpConnectionPtr& conn) {
 
 void base::net::defaultMessageCallback(
   const TcpConnectionPtr&,
-  char* buf,
+  Buffer* buffer,
   Timestamp)
 {
-  LOG_INFO << buf;
+  // LOG_INFO << buffer;
 }
 
 TcpConnection::TcpConnection(
@@ -35,7 +38,8 @@ TcpConnection::TcpConnection(
     socket_(new Socket(sockfd)),
     channel_(new Channel(loop, sockfd)),
     localAddr_(localAddr),
-    peerAddr_(peerAddr)
+    peerAddr_(peerAddr),
+    hightWaterMark_(64 * 1024 * 1024)
 {
   channel_->setReadCallback(boost::bind(&TcpConnection::handleRead, this, _1));
   channel_->setWriteCallback(boost::bind(&TcpConnection::handleWrite, this));
@@ -46,6 +50,74 @@ TcpConnection::TcpConnection(
 
 TcpConnection::~TcpConnection() {
   assert(state_ == kDisconnected);
+}
+
+void TcpConnection::send(Buffer* buf) {
+  if (state_ == kConnected) {
+    if (loop_->isInLoopThread()) {
+      sendInLoop(buf->peek(), buf->readableBytes());
+      buf->retrieveAll();
+    } else {
+      loop_->runInLoop(
+        boost::bind(&TcpConnection::sendInLoop, this, buf->retrieveAllAsString()));
+    }
+  }
+}
+
+void TcpConnection::sendInLoop(const string& message) {
+  sendInLoop(message.c_str(), message.length());
+}
+
+void TcpConnection::sendInLoop(const void* data, size_t len) {
+  loop_->assertInLoopThread();
+  ssize_t nwrote = 0;
+  size_t remaining = len;
+  if (state_ == kDisconnected) {
+    LOG_WARN << "disconnected";
+    return;
+  }
+
+  if (! channel_->isWriting() && outputBuffer_.readableBytes() == 0) {
+    nwrote = sockets::write(channel_->fd(), data, len);
+    if (nwrote >= 0) {
+      remaining = len - nwrote;
+      if (remaining == 0 && writeCompleteCallback_) {
+        loop_->queueInLoop(boost::bind(writeCompleteCallback_, shared_from_this()));
+      }
+    } else {
+      nwrote = 0;
+      LOG_ERROR << "TcpConnection::sendInLoop";
+    }
+  }
+
+  assert(remaining <= len);
+  if (remaining > 0) {
+    size_t oldLen = outputBuffer_.readableBytes();
+    if (oldLen + remaining >= hightWaterMark_
+      && oldLen < hightWaterMark_
+      && highWaterMarkCallback_
+    ) {
+      loop_->queueInLoop(boost::bind(highWaterMarkCallback_, shared_from_this(), oldLen + remaining));
+    }
+    outputBuffer_.append(static_cast<const char*>(data) + nwrote, remaining);
+    if (! channel_->isWriting()) {
+      channel_->enableWriting();
+    }
+  }
+}
+
+void TcpConnection::shutdown() {
+  if (state_ == kConnected) {
+    setState(kDisconnecting);
+    loop_->runInLoop(boost::bind(&TcpConnection::shutdownInLoop, this));
+  }
+}
+
+void TcpConnection::shutdownInLoop() {
+  loop_->assertInLoopThread();
+  if (! channel_->isWriting()) {
+    socket_->shutdownWrite();
+  }
 }
 
 void TcpConnection::connectEstablished() {
@@ -69,13 +141,14 @@ void TcpConnection::connectDestroyed() {
 
 void TcpConnection::handleRead(Timestamp receiveTime) {
   loop_->assertInLoopThread();
-  char buf[1024];
-  ssize_t n = sockets::read(channel_->fd(), buf, sizeof buf);
+  int savedErrno = 0;
+  ssize_t n = inputBuffer_.readFd(channel_->fd(), &savedErrno);
   if (n > 0) {
-    messageCallback_(shared_from_this(), buf, receiveTime);
+    messageCallback_(shared_from_this(), &inputBuffer_, receiveTime);
   } else if (n == 0) {
     handleClose();
   } else {
+    errno = savedErrno;
     handleError();
   }
 }
@@ -84,9 +157,20 @@ void TcpConnection::handleWrite() {
   loop_->assertInLoopThread();
   if (channel_->isWriting()) {
     char buf[] = "a connection is writing";
-    ssize_t n = sockets::write(channel_->fd(), buf, sizeof buf);
+    ssize_t n = sockets::write(channel_->fd(), outputBuffer_.peek(), outputBuffer_.readableBytes());
     if (n < 0) {
       LOG_ERROR << "TcpConnection::handleWrite";
+    } else {
+      outputBuffer_.retrieve(n);
+      if (outputBuffer_.readableBytes() == 0) {
+        channel_->disableWriting();
+        if (writeCompleteCallback_) {
+          loop_->queueInLoop(boost::bind(writeCompleteCallback_, shared_from_this()));
+        }
+        if (state_ == kDisconnecting) {
+          shutdownInLoop();
+        }
+      }
     }
   }
 }
