@@ -17,6 +17,7 @@ set(
   EventLoopThreadPool.cc
   TcpConnection.cc
   TcpServer.cc
+  Buffer.cc
 )
 
 add_library(net ${net})
