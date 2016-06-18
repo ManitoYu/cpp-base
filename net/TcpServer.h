@@ -42,6 +42,7 @@ class TcpServer : boost::noncopyable {
 
     void setConnectionCallback(const ConnectionCallback& cb) { connectionCallback_ = cb; }
     void setMessageCallback(const MessageCallback& cb) { messageCallback_ = cb; }
+    void setWriteCompleteCallback(const WriteCompleteCallback& cb) { writeCompleteCallback_ = cb; }
 
   private:
     void newConnection(int sockfd, const InetAddress& peerAddr);
@@ -57,6 +58,7 @@ class TcpServer : boost::noncopyable {
     boost::shared_ptr<EventLoopThreadPool> threadPool_;
     ConnectionCallback connectionCallback_;
     MessageCallback messageCallback_;
+    WriteCompleteCallback writeCompleteCallback_;
     ThreadInitCallback threadInitCallback_;
     AtomicInt32 started_;
     int nextConnId_;
