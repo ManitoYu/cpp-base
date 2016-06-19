@@ -18,6 +18,8 @@ set(
   TcpConnection.cc
   TcpServer.cc
   Buffer.cc
+  Connector.cc
+  TcpClient.cc
 )
 
 add_library(net ${net})

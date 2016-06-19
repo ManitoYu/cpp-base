@@ -25,3 +25,7 @@ set_target_properties(EventLoopThreadPool_test PROPERTIES COMPILE_FLAGS "-std=c+
 add_executable(TcpServer_test TcpServer_test.cc)
 target_link_libraries(TcpServer_test net pthread)
 set_target_properties(TcpServer_test PROPERTIES COMPILE_FLAGS "-std=c++11")
+
+add_executable(TcpClient_test TcpClient_test.cc)
+target_link_libraries(TcpClient_test net pthread)
+set_target_properties(TcpClient_test PROPERTIES COMPILE_FLAGS "-std=c++11")
