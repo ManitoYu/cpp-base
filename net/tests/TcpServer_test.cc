@@ -15,13 +15,11 @@ int main() {
   TcpServer server(&loop, addr, "TestServer");
   server.setConnectionCallback([](const TcpConnectionPtr& conn) {
     LOG_INFO << "a new connection";
+    conn->send("welcome to my server\n");
   });
   server.setMessageCallback([](const TcpConnectionPtr& conn, Buffer* buf, Timestamp timestamp) {
     // LOG_INFO << buf->retrieveAllAsString();
     conn->send(buf);
-  });
-  server.setWriteCompleteCallback([](const TcpConnectionPtr& conn) {
-
   });
 
   server.start();
