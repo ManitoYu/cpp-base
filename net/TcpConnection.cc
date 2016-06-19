@@ -15,10 +15,11 @@ using namespace base::net;
 
 void base::net::defaultConnectionCallback(const TcpConnectionPtr& conn) {
   LOG_INFO << "a new connection";
+  conn->send("welcome to my server");
 }
 
 void base::net::defaultMessageCallback(
-  const TcpConnectionPtr&,
+  const TcpConnectionPtr& conn,
   Buffer* buffer,
   Timestamp)
 {
@@ -50,6 +51,15 @@ TcpConnection::TcpConnection(
 
 TcpConnection::~TcpConnection() {
   assert(state_ == kDisconnected);
+}
+
+void TcpConnection::send(const void* data, int len) {
+  send(string(static_cast<const char*>(data), len));
+}
+
+void TcpConnection::send(const string& message) {
+  if (state_ != kConnected) return;
+  loop_->queueInLoop(boost::bind(&TcpConnection::sendInLoop, this, message));
 }
 
 void TcpConnection::send(Buffer* buf) {
