@@ -6,6 +6,8 @@
 using namespace base;
 using namespace base::net;
 
+const char Buffer::kCRLF[] = "\r\n";
+
 ssize_t Buffer::readFd(int fd, int* savedErrno) {
   char extrabuf[65536];
   struct iovec vec[2];
