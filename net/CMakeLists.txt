@@ -30,3 +30,4 @@ install(FILES ${HEADERS} DESTINATION include/net)
 install(TARGETS net DESTINATION lib)
 
 add_subdirectory(tests)
+add_subdirectory(http)
