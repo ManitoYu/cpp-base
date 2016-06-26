@@ -50,7 +50,7 @@ TcpConnection::TcpConnection(
 }
 
 TcpConnection::~TcpConnection() {
-  assert(state_ == kDisconnected);
+  // assert(state_ == kDisconnected);
 }
 
 void TcpConnection::send(const void* data, int len) {
@@ -59,7 +59,7 @@ void TcpConnection::send(const void* data, int len) {
 
 void TcpConnection::send(const string& message) {
   if (state_ != kConnected) return;
-  loop_->queueInLoop(boost::bind(&TcpConnection::sendInLoop, this, message));
+  loop_->runInLoop(boost::bind(&TcpConnection::sendInLoop, this, message));
 }
 
 void TcpConnection::send(Buffer* buf) {

@@ -5,6 +5,7 @@
 #include <net/Callbacks.h>
 #include <net/Buffer.h>
 
+#include <boost/any.hpp>
 #include <boost/noncopyable.hpp>
 #include <boost/enable_shared_from_this.hpp>
 #include <boost/shared_ptr.hpp>
@@ -43,6 +44,10 @@ class TcpConnection
     void send(Buffer* message);
 
     void shutdown();
+
+    void setContext(const boost::any& context) { context_ = context; }
+    const boost::any& getContext() const { return context_; }
+    boost::any* getMutableContext() { return &context_; }
 
     void setConnectionCallback(const ConnectionCallback& cb) { connectionCallback_ = cb; }
     void setMessageCallback(const MessageCallback& cb) { messageCallback_ = cb; }
@@ -84,6 +89,8 @@ class TcpConnection
     size_t hightWaterMark_;
     Buffer inputBuffer_;
     Buffer outputBuffer_;
+
+    boost::any context_;
 };
 
 typedef boost::shared_ptr<TcpConnection> TcpConnectionPtr;
