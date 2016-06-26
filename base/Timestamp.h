@@ -13,6 +13,10 @@ public:
   explicit Timestamp(int64_t microSeconds) : microSeconds_(microSeconds) {
   }
 
+  void swap(Timestamp& that) {
+    std::swap(microSeconds_, that.microSeconds_);
+  }
+
   string toString() const;
   string toFormattedString() const;
   int64_t microSeconds() { return microSeconds_; }
